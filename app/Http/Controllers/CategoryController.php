@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Log;
 
 class CategoryController extends Controller
 {
@@ -12,7 +13,11 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        return view('categories.list');
+        $categories = Category::withCount('posts')->paginate(10);
+
+
+        return view('categories.list', compact('categories'));
+
     }
 
     /**
@@ -23,12 +28,26 @@ class CategoryController extends Controller
         return view('categories.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'title' => 'required|string',
+        ], [
+            'title.required' => 'Tiêu đề là bắt buộc.'
+        ]);
+
+        try {
+            Category::create([
+                'title' => $request->title
+            ]);
+
+            toastr()->success('Thêm danh mục thành công.');
+            return redirect()->route('categories.index');
+
+        } catch (\Exception $e) {
+            return back();
+            Log::error($e->getMessage());
+        }
     }
 
     /**
@@ -42,24 +61,47 @@ class CategoryController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Category $category)
+    public function edit($id)
     {
-        //
+        $category = Category::findOrFail($id);
+
+        return view('categories.edit', compact('category'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Category $category)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'title' => 'required|string',
+        ], [
+            'title.required' => 'Tiêu đề là bắt buộc.'
+        ]);
+
+        try {
+            $category = Category::findOrFail($id);
+            $category->title = $request->title;
+            $category->save();
+
+            toastr()->success('Sửa danh mục thành công.');
+            return redirect()->route('categories.index');
+
+        } catch (\Exception $e) {
+            return back();
+            Log::error($e->getMessage());
+        }
+
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Category $category)
+    public function destroy($id)
     {
-        //
+        $category = Category::findOrFail($id);
+        $category->delete();
+        toastr()->success('Xóa danh mục thành công.');
+        return back();
     }
 }
