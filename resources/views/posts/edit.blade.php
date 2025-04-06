@@ -11,7 +11,7 @@
     <h1>Chỉnh sửa bài viết</h1>
     <form method="POST" action="{{ route('posts.update', $post->id) }}">
         @csrf
-z        <div class="form-group mt-3">
+        <div class="form-group mt-3">
             <label for="title">Tiêu đề</label>
             <input type="text" name="title" id="title" class="form-control" value="{{ old('title', $post->title) }}">
             @error('title')

@@ -13,6 +13,9 @@ use App\Http\Controllers\PostController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+Route::get('/', function() {
+    return redirect()->route('posts.index');
+});
 
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('categories/create', [CategoryController::class, 'create'])->name('categories.create');

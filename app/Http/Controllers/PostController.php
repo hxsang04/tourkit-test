@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Log;
+use DB;
 
 class PostController extends Controller
 {
@@ -72,6 +74,8 @@ class PostController extends Controller
             'content.required' => 'Nội dung là bắt buộc.',
             'category_ids.required' => 'Danh mục là bắt buộc.'
         ]);
+
+        DB::beginTransaction();
         try {
             $post = Post::create([
                 'title' => $request->title,
@@ -79,13 +83,16 @@ class PostController extends Controller
             ]);
 
             $post->categories()->attach($request->category_ids);
+            DB::commit();
 
             toastr()->success('Thêm bài viết thành công.');
             return redirect()->route('posts.index');
 
         } catch (\Exception $e) {
-            return back();
+            DB::rollBack();
             Log::error($e->getMessage());
+            toastr()->error('Có lỗi xảy ra, vui lòng thử lại.');
+            return back();
         }
     }
 
@@ -124,15 +131,26 @@ class PostController extends Controller
             'category_ids.required' => 'Danh mục là bắt buộc.'
         ]);
     
-        $post = Post::findOrFail($id);
-        $post->update([
-            'title' => $request->title,
-            'content' => $request->content,
-        ]);
-    
-        $post->categories()->sync($request->category_ids);
-        toastr()->success('Cập nhật bài viết thành công.');
-        return redirect()->route('posts.index');
+        DB::beginTransaction();
+
+        try {
+            $post = Post::findOrFail($id);
+            $post->update([
+                'title' => $request->title,
+                'content' => $request->content,
+            ]);
+            $post->categories()->sync($request->category_ids);
+            DB::commit();
+
+            toastr()->success('Cập nhật bài viết thành công.');
+            return redirect()->route('posts.index');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error($e->getMessage());
+            toastr()->error('Có lỗi xảy ra, vui lòng thử lại.');
+            return back();
+        }
     }
 
     /**

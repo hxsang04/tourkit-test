@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Log;
+use DB;
 
 class CategoryController extends Controller
 {
@@ -45,8 +46,9 @@ class CategoryController extends Controller
             return redirect()->route('categories.index');
 
         } catch (\Exception $e) {
-            return back();
             Log::error($e->getMessage());
+            toastr()->error('Có lỗi xảy ra, vui lòng thử lại.');
+            return back();
         }
     }
 
@@ -88,8 +90,9 @@ class CategoryController extends Controller
             return redirect()->route('categories.index');
 
         } catch (\Exception $e) {
-            return back();
             Log::error($e->getMessage());
+            toastr()->error('Có lỗi xảy ra, vui lòng thử lại.');
+            return back();
         }
 
     }
